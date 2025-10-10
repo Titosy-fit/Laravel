@@ -66,6 +66,7 @@ Route::post("/login", [AuthController::class, "login"]);
 
 // Produit
 Route::post('/products', [ProductController::class, 'ajoutProduit']);
+Route::get('/fournisseur/{id}/produits', [ProductController::class, 'getProduitsByFournisseur']);
 Route::get("/product/{id}", [ProductController::class, "show"]);
 
 // Endpoint API

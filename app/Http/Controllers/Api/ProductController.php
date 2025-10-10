@@ -31,6 +31,7 @@ class ProductController extends Controller
             $imagePath = $request->file("imageProduct")->store("produit", "public");
         }
 
+
         // Créer le produit
         $product = Product::create([
             "refProduct" => $request->refProduct,
@@ -48,6 +49,21 @@ class ProductController extends Controller
             "message" => "Produit ajouté avec succès",
             "data" => $product,
         ]);
+    }
+
+    public function getProduitsByFournisseur($idFournisseur)
+    {
+        // Récupère tous les produits liés à ce fournisseur
+        $produits = Product::where('idFournisseur', $idFournisseur)->get();
+
+        if ($produits->isEmpty()) {
+            return response()->json([
+                "success" => false,
+                "message" => "Aucun produit trouvé pour ce fournisseur"
+            ], 404);
+        }
+
+        return response()->json($produits);
     }
 
 
