@@ -71,7 +71,3 @@ Route::get("/product/{id}", [ProductController::class, "show"]);
 
 // Endpoint API
 Route::get("/categories-produits", [CategorieProduitController::class, "afichage"]);
-
-Route::get('/test-image', function () {
-    return response()->file(storage_path('app/public/produit/aBwVLQbkUSjFT1euvULxKXVxl7S2veJAcSJoZHgS.jpg'));
-});
