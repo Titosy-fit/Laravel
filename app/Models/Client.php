@@ -17,6 +17,7 @@ class Client extends Authenticatable
         'adresse',
         'email',
         'password',
+        'verify_email',
     ];
 
     protected $hidden = [
