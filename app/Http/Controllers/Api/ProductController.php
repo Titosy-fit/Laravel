@@ -65,6 +65,29 @@ class ProductController extends Controller
 
         return response()->json($produits);
     }
+    public function index()
+    {
+        // Charger les produits avec leurs sous-catégories et catégories
+        $produits = Product::with(['sousCategorie.categorie'])->get();
+
+        $result = $produits->map(function ($p) {
+            return [
+                "id" => $p->id,
+                "designProduct" => $p->designProduct,
+                "price" => $p->price ?? null, // si tu as une colonne 'price', sinon tu peux la retirer
+                "imageProduct" => $p->imageProduct,
+                "sous_categorie" => $p->sousCategorie ? [
+                    "nomSousCategorie" => $p->sousCategorie->nomSousCategorie,
+                ] : null,
+                "categorie" => $p->sousCategorie && $p->sousCategorie->categorie ? [
+                    "nomCategorie" => $p->sousCategorie->categorie->nomCategorie,
+                ] : null,
+            ];
+        });
+
+        return response()->json($result);
+    }
+
 
 
     public function show($id)

@@ -38,9 +38,12 @@ Route::post("/clients/verify-email", [ClientController::class, "verifyEmail"]);
 
 //Livreur
 Route::post('/livreur/register', [LivreurController::class, 'register']);
-Route::post('/livreurs/verify-email', [FournisseurController::class, 'verifyEmail']);
-Route::get('/livreurs/en-attente', [FournisseurController::class, 'getEnAttente']);
+Route::post('/livreur/verify-email', [LivreurController::class, 'verifyEmail']);
+Route::get('/livreur/en-attente', [LivreurController::class, 'getEnAttente']);
 Route::post('/livreur/{id}/etat', [LivreurController::class, 'updateEtat']);
+Route::middleware('auth:sanctum')->post('/logoutLivreur', [LivreurController::class, 'logout']);
+Route::middleware('auth:sanctum')->post('/livreur/change-password', [LivreurController::class, 'changePassword']);
+
 
 //Fornisseur
 Route::post('/fournisseur/register', [FournisseurController::class, 'register']);
@@ -66,6 +69,10 @@ Route::post("/login", [AuthController::class, "login"]);
 
 // Produit
 Route::post('/products', [ProductController::class, 'ajoutProduit']);
+// Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products', function () {
+    return \App\Models\Product::all();
+});
 Route::get('/fournisseur/{id}/produits', [ProductController::class, 'getProduitsByFournisseur']);
 Route::get("/product/{id}", [ProductController::class, "show"]);
 

@@ -12,7 +12,6 @@ class Product extends Model
     protected $primaryKey = "idProduct";
     public $incrementing = true;
     protected $keyType = "int";
-
     protected $fillable = [
         "refProduct",
         "designProduct",

@@ -15,6 +15,7 @@ class Livreur extends Authenticatable
     public $incrementing = true;
     protected $keyType = 'int';
 
+
     protected $fillable = [
         'nomLivreur',
         'prenomLivreur',
@@ -29,13 +30,20 @@ class Livreur extends Authenticatable
         'verify_email',
     ];
 
+
     protected $hidden = [
         'passwordLivreur',
         'remember_token',
     ];
 
+
     public function codes()
     {
         return $this->hasMany(CodeLivreur::class, 'idLivreur', 'id');
+    }
+
+    public function getAuthPassword()
+    {
+        return $this->passwordLivreur;
     }
 }
