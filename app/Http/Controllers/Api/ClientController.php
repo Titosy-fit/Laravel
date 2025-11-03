@@ -10,6 +10,8 @@ use App\Models\Code;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\ClientCodeMail;
+
 
 class ClientController extends Controller
 {
@@ -70,11 +72,12 @@ class ClientController extends Controller
         ]);
 
         // // 4️ Envoyer le code par email (optionnel)
+        
         // Mail::raw("Votre code de confirmation est : $randomCode", function ($message) use ($client) {
         //     $message->to($client->email)
         //             ->subject("Code de confirmation");
         // });
-
+  Mail::to($client->email)->send(new ClientCodeMail($randomCode, $client));
         return response()->json([
             "status" => "success",
             "message" => "Inscription réussie.",
@@ -82,7 +85,7 @@ class ClientController extends Controller
             "code" => $randomCode, // en prod, éviter de renvoyer le code dans la réponse
             "token" => $token,
         ], 201);
-    }
+    } 
 
     // ==================== LOGIN ====================
     public function login(Request $request)

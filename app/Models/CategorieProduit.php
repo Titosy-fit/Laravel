@@ -19,4 +19,6 @@ class CategorieProduit extends Model
         return $this->hasMany(SousCategorieProduit::class, "categorieProduit_id")
                     ->with("products"); // on charge aussi les produits
     }
+
+    
 }

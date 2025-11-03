@@ -6,22 +6,22 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class LivreurCodeMail extends Mailable
+class ClientCodeMail extends Mailable
 {
     use Queueable, SerializesModels;
 
     public $code;
-    public $livreur;
+    public $client;
 
-    public function __construct($code, $livreur)
+    public function __construct($code, $client)
     {
         $this->code = $code;
-        $this->livreur = $livreur;
+        $this->client = $client;
     }
 
     public function build()
     {
         return $this->subject('Votre code de validation')
-                    ->view('emails.livreur_code');
+                    ->view('emails.client_code');
     }
 }

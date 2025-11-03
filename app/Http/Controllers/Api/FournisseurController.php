@@ -9,58 +9,82 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use App\Models\CodeFournisseur;
 use App\Models\Client;
+use App\Mail\FournisseurCodeMail;
+use Illuminate\Contracts\Mail\Mailer;
+use Illuminate\Support\Facades\Mail;
+
 
 class FournisseurController extends Controller
 {
     public function register(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            "nomFournisseur" => "required|string|max:255",
-            "prenomFournisseur" => "required|string|max:255",
-            "nomEntreprise" => "required|string|max:255",
-            "emailFRN" => "required|email", // supprime unique:fournisseurs,emailFRN
-            "passwordFRN" => "required|string|min:6|confirmed",
-        ]);
+{
+    $validator = Validator::make($request->all(), [
+        "nomFournisseur" => "required|string|max:255",
+        "prenomFournisseur" => "required|string|max:255",
+        "nomEntreprise" => "required|string|max:255",
+        "emailFRN" => "required|email",
+        "passwordFRN" => "required|string|min:6|confirmed",
+    ]);
 
-        // Si la validation échoue
-        if ($validator->fails()) {
-            return response()->json([
-                "status" => "error",
-                "errors" => $validator->errors(),
-            ], 422);
-        }
-
-        // 🔹 Vérification email unique sur toute l'application
-        $emailExists = Fournisseur::where('emailFRN', $request->emailFRN)->exists()
-            || Client::where('email', $request->emailFRN)->exists();
-
-        if ($emailExists) {
-            return response()->json([
-                "status" => "error",
-                "errors" => [
-                    "emailFRN" => ["Cet email est déjà utilisé par un autre utilisateur."]
-                ]
-            ], 422);
-        }
-
-        // Création fournisseur
-        $fournisseur = Fournisseur::create([
-            "nomFournisseur" => $request->nomFournisseur,
-            "prenomFournisseur" => $request->prenomFournisseur,
-            "nomEntreprise" => $request->nomEntreprise,
-            "nif"  => $request->nif,
-            "emailFRN" => $request->emailFRN,
-            "passwordFRN" => Hash::make($request->passwordFRN),
-            "etatInscription" => "en attente", // valeur par défaut
-            "verify_email"  => "non",
-        ]);
-
+    if ($validator->fails()) {
         return response()->json([
-            "status" => "success",
-            "message" => "Inscription réussie",
-            "fournisseur" => $fournisseur,
-        ], 201);
+            "status" => "error",
+            "errors" => $validator->errors(),
+        ], 422);
     }
+
+    // 🔹 Vérifier email unique dans fournisseurs + clients
+    $emailExists = Fournisseur::where('emailFRN', $request->emailFRN)->exists()
+        || Client::where('email', $request->emailFRN)->exists();
+
+    if ($emailExists) {
+        return response()->json([
+            "status" => "error",
+            "errors" => [
+                "emailFRN" => ["Cet email est déjà utilisé par un autre utilisateur."]
+            ]
+        ], 422);
+    }
+
+    // ✅ Création du fournisseur
+    $fournisseur = Fournisseur::create([
+        "nomFournisseur" => $request->nomFournisseur,
+        "prenomFournisseur" => $request->prenomFournisseur,
+        "nomEntreprise" => $request->nomEntreprise,
+        "nif"  => $request->nif,
+        "emailFRN" => $request->emailFRN,
+        "passwordFRN" => Hash::make($request->passwordFRN),
+        "etatInscription" => "en attente",
+        "verify_email"  => "non",
+    ]);
+
+    // ✅ Génération du code
+    $randomCode = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+
+    // ✅ Sauvegarde du code dans la table code_fournisseurs
+    CodeFournisseur::create([
+        "typeCodeFournisseur" => "validation_email",
+        "codeFournisseur" => $randomCode,
+        "idFournisseur" => $fournisseur->idFournisseur,
+    ]);
+
+    // ✅ Envoi de l'email
+    try {
+        Mail::to($fournisseur->emailFRN)->send(new FournisseurCodeMail($randomCode, $fournisseur));
+    } catch (\Exception $e) {
+        return response()->json([
+            "status" => "error",
+            "message" => "Erreur lors de l'envoi de l'email : " . $e->getMessage(),
+        ], 500);
+    }
+
+    return response()->json([
+        "status" => "success",
+        "message" => "Inscription réussie. Vérifiez votre email pour le code de confirmation.",
+        "fournisseur" => $fournisseur,
+        "code" => $randomCode // à retirer en production
+    ], 201);
+}
 
     // ==================== LOGOUT ====================
     public function logout(Request $request)

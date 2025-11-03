@@ -63,16 +63,15 @@ class LivreurController extends Controller
             "verify_email" => 0,
         ]);
 
-       
+       $randomCode = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
         $codeModel = CodeLivreur::create([
             'idLivreur' => $livreur->id,
-            'codeLivreur' => rand(100000, 999999),
+            'codeLivreur' => $randomCode,
             'typeCodeLivreur' => 'email',
         ]);
 
         try {
-            Mail::to($livreur->emailLivreur)
-                ->send(new LivreurCodeMail($codeModel->codeLivreur, $livreur));
+           Mail::to($livreur->emailLivreur)->send(new LivreurCodeMail($randomCode, $livreur));
         } catch (\Exception $e) {
             \Log::error('Erreur lors de l’envoi du mail de code livreur : ' . $e->getMessage());
         }
